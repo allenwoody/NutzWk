@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by Wizzer.cn on 2015/6/27.
  */
 @Table("sys_user")
-@TableIndexes({@Index(name = "INDEX_USERNAME", fields = {"username"}, unique = false)})
+@TableIndexes({@Index(name = "INDEX_USERNAME", fields = {"username"}, unique = true)})
 public class Sys_user extends BasePojo implements Serializable {
     private static final long serialVersionUID = 1L;
     @Column
@@ -41,8 +41,7 @@ public class Sys_user extends BasePojo implements Serializable {
     @Comment("是否锁定")
     @ColDefine(type = ColType.BOOLEAN)
     private boolean locked;
-    @Column("is_system")
-    @Comment("是否系统帐号")
+    @Comment("系统管理员")
     @ColDefine(type = ColType.BOOLEAN)
     private boolean system;
     @Column("register_ip")
@@ -83,7 +82,6 @@ public class Sys_user extends BasePojo implements Serializable {
     protected List<Sys_menu> menus;
     protected List<Sys_menu> firstMenus;
     protected Map<String, List<Sys_menu>> secondMenus;
-    protected Map<String, String> idMenus;
 
     public String getId() {
         return id;
@@ -243,14 +241,6 @@ public class Sys_user extends BasePojo implements Serializable {
 
     public void setLoginScroll(boolean loginScroll) {
         this.loginScroll = loginScroll;
-    }
-
-    public Map<String, String> getIdMenus() {
-        return idMenus;
-    }
-
-    public void setIdMenus(Map<String, String> idMenus) {
-        this.idMenus = idMenus;
     }
 
     public List<Sys_unit> getUnits() {

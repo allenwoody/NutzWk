@@ -1,6 +1,7 @@
 package cn.wizzer.modules;
 
 import cn.wizzer.common.mvc.config.Dict;
+import cn.wizzer.common.service.RedisService;
 import cn.wizzer.common.util.CacheUtils;
 import cn.wizzer.modules.sys.bean.*;
 import cn.wizzer.common.mvc.config.Globals;
@@ -11,6 +12,7 @@ import org.apache.shiro.crypto.RandomNumberGenerator;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Sha256Hash;
 import org.apache.velocity.app.Velocity;
+import org.nutz.dao.Chain;
 import org.nutz.dao.Cnd;
 import org.nutz.dao.Dao;
 import org.nutz.dao.Sqls;
@@ -25,6 +27,8 @@ import org.nutz.mvc.Mvcs;
 import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.Setup;
 import org.nutz.integration.quartz.NutQuartzCronJobFactory;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.io.IOException;
 import java.util.*;
@@ -36,21 +40,33 @@ public class MainSetup implements Setup {
     private static final Log log = Logs.get();
     static DictService dictService = Mvcs.ctx().getDefaultIoc().get(DictService.class);
     static ConfigService configService = Mvcs.ctx().getDefaultIoc().get(ConfigService.class);
-
     public void init(NutConfig config) {
         try {
             Ioc ioc = config.getIoc();
             Dao dao = ioc.get(Dao.class);
-            //初始化数据表
+            // 初始化数据表
             initSysData(config, dao);
-            //初始化Velocity
+            // 初始化Velocity
             velocityInit(config);
             // 获取NutQuartzCronJobFactory从而触发计划任务的初始化与启动
             ioc.get(NutQuartzCronJobFactory.class);
             // 检查一下Ehcache CacheManager 是否正常.
             CacheManager cacheManager = ioc.get(CacheManager.class);
             log.debug("Ehcache CacheManager = " + cacheManager);
-            //初始化系统变量
+            /* redis测试
+            JedisPool jedisPool = ioc.get(JedisPool.class);
+            try (Jedis jedis = jedisPool.getResource()) {
+                String re = jedis.set("_big_fish", "Hello Word!!");
+                log.debug("1.redis say : " + re);
+                re = jedis.get("_big_fish");
+                log.debug("2.redis say : " + re);
+            } finally {}
+
+            RedisService redis = ioc.get(RedisService.class);
+            redis.set("hi", "wendal,rekoe hoho..");
+            log.debug("redis say again : " + redis.get("hi"));
+            */
+            // 初始化系统变量
             initSysSetting(config, dao);
         } catch (Exception e) {
             e.printStackTrace();
@@ -107,139 +123,179 @@ public class MainSetup implements Setup {
             //初始化菜单
             List<Sys_menu> menuList = new ArrayList<Sys_menu>();
             Sys_menu menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("0001");
             menu.setName("系统管理");
+            menu.setDescription("系统管理");
             menu.setAliasName("System");
             menu.setIcon("ti-settings");
             menu.setLocation(0);
             menu.setHref("");
-            menu.setIs_show(true);
+            menu.setShow(true);
             menu.setHasChildren(true);
             menu.setParentId("");
+            menu.setType("menu");
             Sys_menu m1 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("00010001");
             menu.setName("组织结构");
             menu.setAliasName("Units");
             menu.setLocation(0);
             menu.setHref("/private/sys/unit");
-            menu.setIs_show(true);
+            menu.setShow(true);
             menu.setPermission("sys:unit");
             menu.setParentId(m1.getId());
+            menu.setType("menu");
             Sys_menu m2 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("00010002");
             menu.setName("用户管理");
             menu.setAliasName("Users");
             menu.setLocation(0);
             menu.setHref("/private/sys/user");
-            menu.setIs_show(true);
+            menu.setShow(true);
             menu.setPermission("sys:user");
-            menu.setHasChildren(true);
+            menu.setHasChildren(false);
             menu.setParentId(m1.getId());
+            menu.setType("menu");
             Sys_menu m3 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("000100020001");
             menu.setName("添加用户");
             menu.setAliasName("Add");
             menu.setLocation(0);
-            menu.setIs_show(false);
+            menu.setShow(false);
             menu.setPermission("sys:user:add");
             menu.setParentId(m3.getId());
+            menu.setType("button");
             Sys_menu m31 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("000100020002");
             menu.setName("修改用户");
             menu.setAliasName("Update");
             menu.setLocation(0);
-            menu.setIs_show(false);
+            menu.setShow(false);
             menu.setPermission("sys:user:update");
             menu.setParentId(m3.getId());
+            menu.setType("button");
             Sys_menu m32 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("000100020003");
             menu.setName("删除用户");
             menu.setAliasName("Delete");
             menu.setLocation(0);
-            menu.setIs_show(false);
+            menu.setShow(false);
             menu.setPermission("sys:user:delete");
             menu.setParentId(m3.getId());
+            menu.setType("button");
             Sys_menu m33 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("000100020004");
             menu.setName("更新资料");
             menu.setAliasName("Profile");
             menu.setLocation(0);
-            menu.setIs_show(false);
+            menu.setShow(false);
             menu.setPermission("sys:user:profile");
             menu.setParentId(m3.getId());
+            menu.setType("button");
             Sys_menu m34 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("00010003");
             menu.setName("角色管理");
             menu.setAliasName("Roles");
             menu.setLocation(0);
             menu.setHref("/private/sys/role");
-            menu.setIs_show(true);
+            menu.setShow(true);
             menu.setPermission("sys:role");
             menu.setParentId(m1.getId());
+            menu.setType("menu");
             Sys_menu m4 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("00010004");
             menu.setName("菜单管理");
             menu.setAliasName("Menus");
             menu.setLocation(0);
             menu.setHref("/private/sys/menu");
-            menu.setIs_show(true);
+            menu.setShow(true);
             menu.setPermission("sys:menu");
             menu.setParentId(m1.getId());
+            menu.setType("menu");
             Sys_menu m5 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("00010005");
             menu.setName("参数配置");
             menu.setAliasName("Params");
             menu.setLocation(0);
             menu.setHref("/private/sys/config");
-            menu.setIs_show(true);
+            menu.setShow(true);
             menu.setPermission("sys:config");
             menu.setParentId(m1.getId());
+            menu.setType("menu");
             Sys_menu m6 = dao.insert(menu);
             menu = new Sys_menu();
-            menu.setIs_enabled(true);
+            menu.setEnabled(true);
             menu.setPath("00010006");
             menu.setName("数据字典");
             menu.setAliasName("Dicts");
             menu.setLocation(0);
             menu.setHref("/private/sys/dict");
-            menu.setIs_show(true);
+            menu.setShow(true);
             menu.setPermission("sys:dict");
             menu.setParentId(m1.getId());
+            menu.setType("menu");
             Sys_menu m7 = dao.insert(menu);
+            menu = new Sys_menu();
+            menu.setEnabled(true);
+            menu.setPath("00010007");
+            menu.setName("日志管理");
+            menu.setAliasName("Logs");
+            menu.setLocation(0);
+            menu.setHref("/private/sys/log");
+            menu.setShow(true);
+            menu.setPermission("sys:log");
+            menu.setParentId(m1.getId());
+            menu.setType("menu");
+            Sys_menu m8 = dao.insert(menu);
+            menu = new Sys_menu();
+            menu.setEnabled(true);
+            menu.setPath("00010008");
+            menu.setName("插件管理");
+            menu.setAliasName("Plugins");
+            menu.setLocation(0);
+            menu.setHref("/private/sys/plugin");
+            menu.setShow(true);
+            menu.setPermission("sys:plugin");
+            menu.setParentId(m1.getId());
+            menu.setType("menu");
+            Sys_menu m9 = dao.insert(menu);
             //初始化角色
             Sys_role role = new Sys_role();
             role.setName("公共角色");
-            role.setAlias("public");
+            role.setCode("public");
+            role.setAliasName("Public");
             role.setDescription("All user's role.");
             role.setLocation(0);
-            role.setUnitid("");
+            role.setUnitid("_system");
+            role.setEnabled(true);
             dao.insert(role);
             role = new Sys_role();
             role.setName("超级管理员");
-            role.setAlias("superadmin");
+            role.setCode("superadmin");
+            role.setAliasName("Superadmin");
             role.setDescription("Super Admin");
             role.setLocation(1);
-            role.setUnitid("");
+            role.setUnitid("_system");
             role.setMenus(menuList);
+            role.setEnabled(true);
             Sys_role dbrole = dao.insert(role);
             //初始化用户
             Sys_user user = new Sys_user();
@@ -259,8 +315,10 @@ public class MainSetup implements Setup {
             profile.setLinkQq("11624317");
             profile.setUserId(dbuser.getId());
             dao.insert(profile);
-            dao.execute(Sqls.create("insert into `sys_user_unit` (`user_id`, `unit_id`) values('" + dbuser.getId() + "','" + dbunit.getId() + "')"));
-            dao.execute(Sqls.create("insert into `sys_user_role` (`user_id`, `role_id`) values('" + dbuser.getId() + "','" + dbrole.getId() + "')"));
+            //不同的插入数据方式(安全)
+            dao.insert("sys_user_unit", Chain.make("user_id", dbuser.getId()).add("unit_id", dbunit.getId()));
+            dao.insert("sys_user_role", Chain.make("user_id", dbuser.getId()).add("role_id", dbrole.getId()));
+            //执行自定义SQL插入
             dao.execute(Sqls.create("insert into `sys_role_menu` (`role_id`, `menu_id`) values('" + dbrole.getId() + "','" + m1.getId() + "')"));
             dao.execute(Sqls.create("insert into `sys_role_menu` (`role_id`, `menu_id`) values('" + dbrole.getId() + "','" + m2.getId() + "')"));
             dao.execute(Sqls.create("insert into `sys_role_menu` (`role_id`, `menu_id`) values('" + dbrole.getId() + "','" + m3.getId() + "')"));
@@ -272,6 +330,9 @@ public class MainSetup implements Setup {
             dao.execute(Sqls.create("insert into `sys_role_menu` (`role_id`, `menu_id`) values('" + dbrole.getId() + "','" + m5.getId() + "')"));
             dao.execute(Sqls.create("insert into `sys_role_menu` (`role_id`, `menu_id`) values('" + dbrole.getId() + "','" + m6.getId() + "')"));
             dao.execute(Sqls.create("insert into `sys_role_menu` (`role_id`, `menu_id`) values('" + dbrole.getId() + "','" + m7.getId() + "')"));
+            //另外一种写法(安全)
+            dao.execute(Sqls.create("insert into `sys_role_menu` (`role_id`, `menu_id`) values(@a,@b)").setParam("a", dbrole.getId()).setParam("b", m8.getId()));
+            dao.execute(Sqls.create("insert into `sys_role_menu` (`role_id`, `menu_id`) values(@a,@b)").setParam("a", dbrole.getId()).setParam("b", m9.getId()));
 
         }
     }

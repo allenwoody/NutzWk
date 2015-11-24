@@ -16,7 +16,7 @@ public class Sys_menu extends BasePojo implements Serializable {
     @Name
     @Comment("ID")
     @ColDefine(type = ColType.VARCHAR, width = 64)
-    @Prev(els={@EL("uuid()")})
+    @Prev(els = {@EL("uuid()")})
     private String id;
     @Column
     @Comment("父级ID")
@@ -35,6 +35,10 @@ public class Sys_menu extends BasePojo implements Serializable {
     @ColDefine(type = ColType.VARCHAR, width = 100)
     private String aliasName;
     @Column
+    @Comment("资源类型")
+    @ColDefine(type = ColType.VARCHAR, width = 10)
+    private String type;
+    @Column
     @Comment("菜单链接")
     @ColDefine(type = ColType.VARCHAR, width = 1000)
     private String href;
@@ -46,12 +50,12 @@ public class Sys_menu extends BasePojo implements Serializable {
     @Comment("菜单图标")
     @ColDefine(type = ColType.VARCHAR, width = 50)
     private String icon;
-    @Column
+    @Column("is_show")
     @Comment("是否显示")
-    private boolean is_show;
-    @Column
+    private boolean show;
+    @Column("is_enabled")
     @Comment("是否启用")
-    private boolean is_enabled;
+    private boolean enabled;
     @Column
     @Comment("权限标识")
     @ColDefine(type = ColType.VARCHAR, width = 500)
@@ -107,6 +111,14 @@ public class Sys_menu extends BasePojo implements Serializable {
         this.aliasName = aliasName;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getHref() {
         return href;
     }
@@ -131,20 +143,20 @@ public class Sys_menu extends BasePojo implements Serializable {
         this.icon = icon;
     }
 
-    public boolean is_show() {
-        return is_show;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setIs_show(boolean is_show) {
-        this.is_show = is_show;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public boolean is_enabled() {
-        return is_enabled;
+    public boolean isShow() {
+        return show;
     }
 
-    public void setIs_enabled(boolean is_enabled) {
-        this.is_enabled = is_enabled;
+    public void setShow(boolean show) {
+        this.show = show;
     }
 
     public String getPermission() {

@@ -8,9 +8,7 @@
     <meta name="description" content="NutzWk 2.0">
     <meta name="keywords" content="nutz,wizzer">
     <title>${app_name}</title>
-    <link rel="stylesheet" href="${base}/include/plugins/jvectormap/jquery-jvectormap-1.2.2.css">
-
-
+    <link rel="stylesheet" href="${base}/include/plugins/stepy/jquery.stepy.css">
     <link rel="stylesheet" href="${base}/include/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="${base}/include/css/font-awesome.css">
     <link rel="stylesheet" href="${base}/include/css/themify-icons.css">
@@ -316,7 +314,7 @@
                     <span>${msg['index.home']}</span>
                 </a>
             </li>
-            #set($id=${shiro.getPrincipalProperty('idMenus').get($app_path)})
+            #set($id=$app_path)
             #if(!$id||$id=="") #set($id="wizzer.cn")#end
             #if(!$app_language||$app_language=="zh_CN")
             <!--中文-->
@@ -332,7 +330,7 @@
                 <ul class="sub-menu">
                     #foreach($obj in ${shiro.getPrincipalProperty('secondMenus').get($menu.path)})
                     <li #if($id==$obj.path)class="active"#elseif($id.indexOf($obj.path)!=-1)class="open"#end>
-                        <a #if(${obj.href}) href="$!{obj.href}" #else href="javascript:;"#end>
+                        <a #if(${obj.href}) href="${base}$!{obj.href}" #else href="javascript:;"#end>
                             #if(${shiro.getPrincipalProperty('secondMenus').get($obj.path)}&&${shiro.getPrincipalProperty('secondMenus').get($obj.path).size()}>0)<i class="toggle-accordion"></i>#end
                             <span>$!{obj.name}</span>
                         </a>
@@ -340,7 +338,7 @@
                         <ul class="sub-menu">
                             #foreach($mm in ${shiro.getPrincipalProperty('secondMenus').get($obj.path)})
                             <li #if($id==$mm.path)class="active"#end>
-                                <a #if(${mm.href}) href="$!{mm.href}" #else href="javascript:;"#end>
+                                <a #if(${mm.href}) href="${base}$!{mm.href}" #else href="javascript:;"#end>
                                     <span>$!{mm.name}</span>
                                 </a>
                             </li>
@@ -368,7 +366,7 @@
                 <ul class="sub-menu">
                     #foreach($obj in ${shiro.getPrincipalProperty('secondMenus').get($menu.path)})
                     <li #if($id==$obj.path)class="active"#elseif($id.indexOf($obj.path)!=-1)class="open"#end>
-                        <a #if(${obj.href}) href="$!{obj.href}" #else href="javascript:;"#end>
+                        <a #if(${obj.href}) href="${base}$!{obj.href}" #else href="javascript:;"#end>
                             #if(${shiro.getPrincipalProperty('secondMenus').get($obj.path)}&&${shiro.getPrincipalProperty('secondMenus').get($obj.path).size()}>0)<i class="toggle-accordion"></i>#end
                             <span>$!{obj.aliasName}</span>
                         </a>
@@ -376,7 +374,7 @@
                         <ul class="sub-menu">
                             #foreach($mm in ${shiro.getPrincipalProperty('secondMenus').get($obj.path)})
                             <li #if($id==$mm.path)class="active"#end>
-                                <a #if(${mm.href}) href="$!{mm.href}" #else href="javascript:;"#end>
+                                <a #if(${mm.href}) href="${base}$!{mm.href}" #else href="javascript:;"#end>
                                     <span>$!{mm.aliasName}</span>
                                 </a>
                             </li>
@@ -473,10 +471,14 @@
 <script type="text/javascript">
     function __jumpPage$!tableid(page){
         sublime.showLoadingbar($(".main-content"));
-        var __pageControl = $("#$!tableid");
+        #if("$!tableid"!="")
+            var __pageControl = $("#$!tableid");
+        #else
+        var __pageControl = $("#data");
+        #end
         var form = __pageControl.parent("form");
         var param = {};
-        var inputs = form.find("input");
+        var inputs = $.find("input");
         $.each(inputs, function(i,input){
             param[input.name] = input.value;
         });
@@ -484,13 +486,17 @@
         param.tableId = "$!tableid";
         $.post(form.attr("action"), param, function (data) {
             if(!data){ return false;}
+            #if("$!tableid"!="")
             $("#$!tableid tbody").html(data);
+            #else
+            $("#data tbody").html(data);
+            #end
             $("#__pageLeft$!tableid").html("第"+$("#pageNo$!tableid").val()+"/"+$("#totalPage$!tableid").val()+"页，每页显示"+$("#pageSize$!tableid").val()+"条，共"+$("#totalCount$!tableid").val()+"条数据");
             $("#__pageControl$!tableid").html("<li id=\"__pageFirst$!tableid\" class=\"disabled\"><a href=\"javascript:;\">首页</a></li>" +
                     "<li id=\"__pagePre$!tableid\" class=\"disabled\"><a href=\"javascript:;\">上一页</a></li>" +
                     "<li id=\"__pageNext$!tableid\" class=\"disabled\"><a href=\"javascript:;\">下一页</a></li>" +
                     "<li id=\"__pageLast$!tableid\" class=\"disabled\"><a href=\"javascript:;\">末页</a></li>");
-            if($("#pageNo$!tableid").val()>1){
+            if(parseInt($("#pageNo$!tableid").val())>1){
                 $("#__pageFirst$!tableid").removeClass("disabled");
                 $("#__pagePre$!tableid").removeClass("disabled");
                 $("#__pageFirst$!tableid a").on("click",function(){
@@ -505,7 +511,7 @@
                 $("#__pageFirst$!tableid a").off("click");
                 $("#__pagePre$!tableid a").off("click");
             }
-            if($("#totalPage$!tableid").val() > $("#pageNo$!tableid").val()){
+            if(parseInt($("#totalPage$!tableid").val()) > parseInt($("#pageNo$!tableid").val())){
                 $("#__pageNext$!tableid").removeClass("disabled");
                 $("#__pageLast$!tableid").removeClass("disabled");
                 $("#__pageNext$!tableid a").on("click",function(){
@@ -524,8 +530,5 @@
             return false;
         });
     }
-    $(document).ready(function () {
-        __jumpPage$!tableid(1);
-    });
 </script>
 #end

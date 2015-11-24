@@ -3,7 +3,9 @@ package cn.wizzer.common.mvc.listener;
 import cn.wizzer.common.service.log.SysLogService;
 import cn.wizzer.common.util.StringUtils;
 import cn.wizzer.modules.sys.bean.Sys_log;
+import cn.wizzer.modules.sys.bean.Sys_user;
 import cn.wizzer.modules.sys.service.UserService;
+import org.apache.shiro.SecurityUtils;
 import org.nutz.dao.Chain;
 import org.nutz.dao.Cnd;
 import org.nutz.lang.Strings;
@@ -24,10 +26,21 @@ public class MySessionListener implements HttpSessionListener {
 
     /**
      * 记录用户登出日志并改变在线状态
+     *
      * @param event
      */
     public void sessionDestroyed(HttpSessionEvent event) {
-        String uid = StringUtils.getUid();
+
+        String b = Strings.sNull(event.getSession().getAttribute("logout"));
+        if ("true".equals(b))
+            return;
+        String username = null, uid = null;
+        Object u = SecurityUtils.getSubject().getPrincipal();
+        if (u != null) {
+            Sys_user user = (Sys_user) u;
+            uid = user.getId();
+            username = user.getUsername();
+        }
         if (Strings.isEmpty(uid))
             return;
         if (sysLogService == null) {
@@ -36,8 +49,8 @@ public class MySessionListener implements HttpSessionListener {
         if (userService == null) {
             userService = Mvcs.ctx().getDefaultIoc().get(UserService.class);
         }
-        Sys_log syslog = Sys_log.c("system", "用户退出", uid, "用户："+uid+" 超时，自动退出系统！",null);
+        Sys_log syslog = Sys_log.c("system", "用户退出", uid, username, "用户：" + username + " 退出系统！", null);
         sysLogService.async(syslog);
-        userService.update(Chain.make("is_online",false), Cnd.where("id","=",uid));
+        userService.update(Chain.make("is_online", false), Cnd.where("id", "=", uid));
     }
 }

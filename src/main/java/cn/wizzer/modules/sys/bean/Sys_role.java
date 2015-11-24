@@ -21,7 +21,11 @@ public class Sys_role extends BasePojo implements Serializable {
     @Column
     private String name;
     @Column
-    protected String alias;
+    private String code;
+    @Column
+    protected String aliasName;
+    @Column("is_enabled")
+    private boolean enabled;
     @Column
     @ColDefine(type = ColType.VARCHAR, width = 100)
     private String unitid;
@@ -49,12 +53,20 @@ public class Sys_role extends BasePojo implements Serializable {
         this.name = name;
     }
 
-    public String getAlias() {
-        return alias;
+    public String getAliasName() {
+        return aliasName;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setAliasName(String aliasName) {
+        this.aliasName = aliasName;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public String getUnitid() {
@@ -87,5 +99,13 @@ public class Sys_role extends BasePojo implements Serializable {
 
     public void setMenus(List<Sys_menu> menus) {
         this.menus = menus;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }
